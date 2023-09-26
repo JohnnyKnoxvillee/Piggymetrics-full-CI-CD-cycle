@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.metadata.name }}
+  labels: {{ .Values.labels.service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: {{ .Values.selector.service }}
+  template:
+    metadata:
+      labels: {{ .Values.labels.service }}
+    spec:
+      containers:
+      - name: {{ .Values.containers.name }}
+        env:
+          - name: CONFIG_SERVICE_PASSWORD
+            value: {{ .Values.CONFIG_SERVICE_PASSWORD }}
+          - name: NOTIFICATION_SERVICE_PASSWORD
+            value: {{ .Values.NOTIFICATION_SERVICE_PASSWORD }}
+          - name: STATISTICS_SERVICE_PASSWORD
+            value: {{ .Values.STATISTICS_SERVICE_PASSWORD }}
+          - name: ACCOUNT_SERVICE_PASSWORD
+            value: {{ .Values.ACCOUNT_SERVICE_PASSWORD }}
+          - name: MONGODB_PASSWORD
+            value: {{ .Values.MONGODB_PASSWORD }}
+        image: {{ .Values.image.repository }}
+        resources:
+            limits:
+              memory: {{ .Values.resources.limits.memory }}    
+        ports:
+        - containerPort: {{ .Values.service.port }}
+          restartPolicy: Always
+          protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+

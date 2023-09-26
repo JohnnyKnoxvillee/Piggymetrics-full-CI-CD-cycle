@@ -1,0 +1,64 @@
+CONFIG_SERVICE_PASSWORD: password
+NOTIFICATION_SERVICE_PASSWORD: password
+STATISTICS_SERVICE_PASSWORD: password
+ACCOUNT_SERVICE_PASSWORD: password
+MONGODB_PASSWORD: password
+
+image:
+  repository: leonid132/piggymetrics-auth-service:latest
+  pullPolicy: IfNotPresent
+replicaCount: 1
+metadata:
+  name: authservice-deployment
+labels:
+  service: authservice
+selector:
+  service: authservice
+
+service:
+  type: ClusterIP
+  port: 5000
+  targetport: 5000
+containers:
+  name: authservice
+serviceAccount:
+  create: true
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+resources: 
+  limits:
+    memory: 300Mi
+  requests:
+    cpu: 100m
+    memory: 100Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
