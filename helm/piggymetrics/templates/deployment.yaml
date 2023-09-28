@@ -2,14 +2,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.metadata.name }}
-  labels: {{ .Values.labels.service }}
+  labels: 
+    service: {{ .Values.labels.service }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
-    matchLabels: {{ .Values.selector.service }}
+    matchLabels: 
+      service: {{ .Values.selector.service }}
   template:
     metadata:
-      labels: {{ .Values.labels.service }}
+      labels: 
+        service: {{ .Values.labels.service }}
     spec:
       containers:
       - name: {{ .Values.containers.name }}
@@ -24,24 +27,11 @@ spec:
             value: {{ .Values.ACCOUNT_SERVICE_PASSWORD }}
           - name: MONGODB_PASSWORD
             value: {{ .Values.MONGODB_PASSWORD }}
-        image: {{ .Values.image.repository }}
-        resources:
-            limits:
-              memory: {{ .Values.resources.limits.memory }}    
+        image: {{ .Values.image.repository }}  
         ports:
         - containerPort: {{ .Values.service.port }}
-          restartPolicy: Always
-          protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
