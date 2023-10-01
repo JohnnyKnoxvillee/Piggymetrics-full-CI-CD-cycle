@@ -9,7 +9,7 @@ image:
   pullPolicy: IfNotPresent
 replicaCount: 1
 metadata:
-  name: registry-deployment
+  name: registry
 labels:
   service: registry
 selector:
@@ -53,7 +53,7 @@ ingress:
 
 resources: 
   limits:
-    memory: 300Mi
+    memory: 500Mi
   requests:
     cpu: 100m
     memory: 100Mi

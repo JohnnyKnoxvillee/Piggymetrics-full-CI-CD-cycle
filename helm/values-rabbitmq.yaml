@@ -9,7 +9,7 @@ image:
   pullPolicy: IfNotPresent
 replicaCount: 1
 metadata:
-  name: rabbitmq-deployment
+  name: rabbitmq
 labels:
   service: rabbitmq
 selector:

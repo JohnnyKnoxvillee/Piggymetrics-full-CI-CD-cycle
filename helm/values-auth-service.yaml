@@ -9,7 +9,7 @@ image:
   pullPolicy: IfNotPresent
 replicaCount: 1
 metadata:
-  name: authservice-deployment
+  name: auth-service
 labels:
   service: authservice
 selector:
@@ -52,7 +52,7 @@ ingress:
 
 resources: 
   limits:
-    memory: 300Mi
+    memory: 700Mi
   requests:
     cpu: 100m
     memory: 100Mi

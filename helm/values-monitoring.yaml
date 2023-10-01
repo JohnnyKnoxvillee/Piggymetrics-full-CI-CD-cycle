@@ -9,7 +9,7 @@ image:
   pullPolicy: IfNotPresent
 replicaCount: 1
 metadata:
-  name: monitoring-deployment
+  name: monitoring
 labels:
   service: monitoring
 selector:

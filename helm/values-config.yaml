@@ -9,7 +9,7 @@ image:
   pullPolicy: IfNotPresent
 replicaCount: 1
 metadata:
-  name: config-deployment
+  name: config
 labels:
   service: config
 selector:

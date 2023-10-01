@@ -9,7 +9,7 @@ image:
   pullPolicy: IfNotPresent
 replicaCount: 1
 metadata:
-  name: statisticsmongodb-deployment
+  name: statistics-mongodb
 labels:
   service: statisticsmongodb
 selector:
