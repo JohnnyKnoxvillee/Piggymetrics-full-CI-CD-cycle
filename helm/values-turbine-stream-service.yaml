@@ -1,0 +1,53 @@
+CONFIG_SERVICE_PASSWORD: password
+NOTIFICATION_SERVICE_PASSWORD: password
+STATISTICS_SERVICE_PASSWORD: password
+ACCOUNT_SERVICE_PASSWORD: password
+MONGODB_PASSWORD: password
+
+image:
+  repository: leonid132/piggymetrics-turbine-stream-service:latest
+  pullPolicy: IfNotPresent
+replicaCount: 1
+metadata:
+  name: turbine-stream-service
+labels:
+  service: turbine-stream-service
+selector:
+  service: turbine-stream-service
+
+service:
+  type: ClusterIP
+  port: 8989
+  targetport: 8989
+
+containers:
+  name: turbine-stream-service
+serviceAccount:
+  create: true
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+resources: 
+  limits:
+    memory: 300Mi
+  requests:
+    cpu: 100m
+    memory: 100Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

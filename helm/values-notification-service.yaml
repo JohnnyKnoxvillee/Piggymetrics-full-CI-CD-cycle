@@ -1,0 +1,53 @@
+CONFIG_SERVICE_PASSWORD: password
+NOTIFICATION_SERVICE_PASSWORD: password
+STATISTICS_SERVICE_PASSWORD: password
+ACCOUNT_SERVICE_PASSWORD: password
+MONGODB_PASSWORD: password
+
+image:
+  repository: leonid132/piggymetrics-notification-service:latest
+  pullPolicy: IfNotPresent
+replicaCount: 1
+metadata:
+  name: notification-service
+labels:
+  service: notificationservice
+selector:
+  service: notificationservice
+
+service:
+  type: ClusterIP
+  port: 8000
+  targetport: 8000
+
+containers:
+  name: notificationservice
+serviceAccount:
+  create: true
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+resources: 
+  limits:
+    memory: 700Mi
+  requests:
+    cpu: 100m
+    memory: 100Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

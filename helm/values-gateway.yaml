@@ -1,0 +1,53 @@
+CONFIG_SERVICE_PASSWORD: password
+NOTIFICATION_SERVICE_PASSWORD: password
+STATISTICS_SERVICE_PASSWORD: password
+ACCOUNT_SERVICE_PASSWORD: password
+MONGODB_PASSWORD: password
+
+image:
+  repository: leonid132/piggymetrics-gateway:latest
+  pullPolicy: IfNotPresent
+replicaCount: 1
+metadata:
+  name: gateway
+labels:
+  service: gateway
+selector:
+  service: gateway
+
+service:
+  type: ClusterIP
+  port: 4000
+  targetport: 4000
+
+containers:
+  name: gateway
+serviceAccount:
+  create: true
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+resources: 
+  limits:
+    memory: 300Mi
+  requests:
+    cpu: 100m
+    memory: 100Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
