@@ -1,19 +1,17 @@
-CONFIG_SERVICE_PASSWORD: password
-NOTIFICATION_SERVICE_PASSWORD: password
-STATISTICS_SERVICE_PASSWORD: password
-ACCOUNT_SERVICE_PASSWORD: password
-MONGODB_PASSWORD: password
+envvars:
+  CONFIG_SERVICE_PASSWORD: password
+  NOTIFICATION_SERVICE_PASSWORD: password
+  STATISTICS_SERVICE_PASSWORD: password
+  ACCOUNT_SERVICE_PASSWORD: password
+  MONGODB_PASSWORD: password
+  
+statefulset:
+  enabled: false
 
 image:
   repository: leonid132/piggymetrics-statistics-service:latest        
   pullPolicy: IfNotPresent
 replicaCount: 1
-metadata:
-  name: statistics-service
-labels:
-  service: statisticsservice
-selector:
-  service: statisticsservice
 
 service:
   type: ClusterIP
@@ -22,12 +20,10 @@ service:
 
 containers:
   name: statisticsservice
-serviceAccount:
-  create: true
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: "statisticsservice"
+fullnameOverride: "statistics-service"
 
 serviceAccount:
   create: true

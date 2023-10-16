@@ -1,19 +1,21 @@
-CONFIG_SERVICE_PASSWORD: password
-NOTIFICATION_SERVICE_PASSWORD: password
-STATISTICS_SERVICE_PASSWORD: password
-ACCOUNT_SERVICE_PASSWORD: password
-MONGODB_PASSWORD: password
-
+envvars:
+  CONFIG_SERVICE_PASSWORD: password
+  NOTIFICATION_SERVICE_PASSWORD: password
+  STATISTICS_SERVICE_PASSWORD: password
+  ACCOUNT_SERVICE_PASSWORD: password
+  MONGODB_PASSWORD: password
+  
+statefulset:
+  enabled: true
+  
 image:
   repository: leonid132/piggymetrics-mongodb:latest
   pullPolicy: IfNotPresent
 replicaCount: 1
-metadata:
-  name: auth-mongodb
-labels:
-  service: authmongodb
-selector:
-  service: authmongodb
+
+spec:
+  storage: 4Gi
+  storageClassName: standard-rwo
 
 service:
   type: ClusterIP
@@ -22,12 +24,10 @@ service:
 
 containers:
   name: authmongodb
-serviceAccount:
-  create: true
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: "authmongodb"
+fullnameOverride: "auth-mongodb"
 
 serviceAccount:
   create: true

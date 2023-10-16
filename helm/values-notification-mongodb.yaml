@@ -1,20 +1,22 @@
-CONFIG_SERVICE_PASSWORD: password
-NOTIFICATION_SERVICE_PASSWORD: password
-STATISTICS_SERVICE_PASSWORD: password
-ACCOUNT_SERVICE_PASSWORD: password
-MONGODB_PASSWORD: password
+envvars:
+  CONFIG_SERVICE_PASSWORD: password
+  NOTIFICATION_SERVICE_PASSWORD: password
+  STATISTICS_SERVICE_PASSWORD: password
+  ACCOUNT_SERVICE_PASSWORD: password
+  MONGODB_PASSWORD: password
+  
+statefulset:
+  enabled: true
 
 image:
   repository: leonid132/piggymetrics-mongodb:latest
   pullPolicy: IfNotPresent
 replicaCount: 1
-metadata:
-  name: notification-mongodb
-labels:
-  service: notificationmongodb
-selector:
-  service: notificationmongodb
 
+spec:
+  storage: 4Gi
+  storageClassName: standard-rwo
+  
 service:
   type: ClusterIP
   port: 28000
@@ -22,12 +24,10 @@ service:
 
 containers:
   name: notificationmongodb
-serviceAccount:
-  create: true
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: "notificationmongodb"
+fullnameOverride: "notification-mongodb"
 
 serviceAccount:
   create: true
