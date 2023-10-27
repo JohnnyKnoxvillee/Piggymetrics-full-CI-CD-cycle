@@ -26,7 +26,7 @@ stages:
 
 .build_docker_template:
   stage: build_docker
-  image: gcr.io/devops-workshop-2023/terraform-runner:1.0.1
+  image: alpine:latest #gcr.io/devops-workshop-2023/terraform-runner:1.0.1 #disable Google related commands
   script:
     - | #create artifact folder and add jar files to service folders
       SERVICE_LIST=$(ls -d */ | sed 's#/##' | grep -Ev 'artifacts|mongodb')
@@ -98,7 +98,20 @@ Create_release_branch_job:
     - git push origin $RELEASE_VERSION #push 1.0.0 artifacts to release branch
     - !reference [.build_template, script] #start script ".build_template" - test and versions set
     - mvn clean package #build jar files 1.0.0
-    - !reference [.build_docker_template, script] #start script ".build_docker_template" - cd artifacts to service-folders, authorization in gcloud and create artifact repo
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH && $CI_COMMIT_MESSAGE != "$(cat ci_commit_message.env)"
+  dependencies:
+    - Master_build_docker_job
+#push 1.0.0 artifacts to release branch
+
+Push_release_artifacts_job:
+  stage: release
+  extends: .build_docker_template
+  before_script:
+    - BUILD_TIMESTAMP=$(date +"%Y-%m-%d-%H.%M") #timestamp in "2000-01-01-12.00" format
+    - VERSION=$(awk -F'[><]' '/<version>.*-SNAPSHOT<\/version>/{print $3 "-'$BUILD_TIMESTAMP'-'$CI_COMMIT_SHORT_SHA'"}' "./pom.xml") #"version" variable
+    - sed 's/$VERSION'/$VERSION/g cloudbuild.yaml > cloudbuild_template.yaml #add version variable in the template cloudbuild file
+  script:
     - | #change variables in the cloudbuild file using a template file and create service-images in artifact registry/artifact_name:tag #disable Google related commands
       SERVICE_LIST=$(ls -d */ | sed 's#/##' | grep -v artifacts)
       FOLDER=
@@ -109,8 +122,8 @@ Create_release_branch_job:
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH && $CI_COMMIT_MESSAGE != "$(cat ci_commit_message.env)"
   dependencies:
-    - Master_build_docker_job
-#push 1.0.0 artifacts to release branch
+    - Create_release_branch_job
+
 
 Release_master_job:
   stage: release
@@ -150,16 +163,26 @@ Release_master_job:
   dependencies:
     - Create_release_branch_job
 
-Branch_job:
+Branch_build_job:
   stage: branch
-  image: maven:3.9.4-eclipse-temurin-11-alpine
+  extends: .build_template
   before_script:
     - BUILD_TIMESTAMP=$(date +"%Y-%m-%d-%H.%M") #timestamp in "2000-01-01-12.00" format
     - VERSION=$(awk -F'[><]' '/<version>.*-SNAPSHOT<\/version>/{print $3 "-'$BUILD_TIMESTAMP'-'$CI_COMMIT_SHORT_SHA'"}' "./pom.xml") #"version" variable
   script:
-    - !reference [.build_template, script]
     - mvn clean package #build jar files 1.0.0
-    - !reference [.build_docker_template, script] #start script ".build_docker_template" - cd artifacts to service-folders, authorization in gcloud and create artifact repo
+  rules:
+    - if: $CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_NAME !~ ".*-release"
+      when: manual
+
+Branch_build_docker_job:
+  stage: branch
+  extends: .build_docker_template
+  before_script:
+    - BUILD_TIMESTAMP=$(date +"%Y-%m-%d-%H.%M") #timestamp in "2000-01-01-12.00" format
+    - VERSION=$(awk -F'[><]' '/<version>.*-SNAPSHOT<\/version>/{print $3 "-'$BUILD_TIMESTAMP'-'$CI_COMMIT_SHORT_SHA'"}' "./pom.xml") #"version" variable
+    - sed 's/$VERSION'/$VERSION/g cloudbuild.yaml > cloudbuild_template.yaml #add version variable in the template cloudbuild file
+  script:
     - | #change variables in the cloudbuild file using a template file and create service-images in artifact registry/$branch_name/artifact_name:tag #disable Google related commands
       SERVICE_LIST=$(ls -d */ | sed 's#/##' | grep -v artifacts)
       FOLDER=$CI_COMMIT_BRANCH
@@ -170,3 +193,5 @@ Branch_job:
   rules:
     - if: $CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_NAME !~ ".*-release"
       when: manual
+  dependencies:
+    - Branch_build_job
