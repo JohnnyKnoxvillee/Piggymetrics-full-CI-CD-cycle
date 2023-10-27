@@ -91,7 +91,7 @@ Create_release_branch_job:
     - sed 's/$VERSION'/$VERSION/g cloudbuild.yaml > cloudbuild_template.yaml #add version variable in the template cloudbuild file
   script:
     - RELEASE_VERSION=$(echo $VERSION | sed 's/\-.*//')-release #"release version" variable in format 1.0.0-release
-    - apt install git
+    - apk add install git
     - git config --global user.name "${GITLAB_USER_NAME}"
     - git config --global user.email "${GITLAB_USER_EMAIL}" #authorization repo in git
     - git checkout -b $RELEASE_VERSION #checkout to release branch
@@ -106,7 +106,7 @@ Create_release_branch_job:
 #push 1.0.0 artifacts to release branch
 
 Push_release_artifacts_job:
-  stage: release
+  stage: create_release_branch
   extends: .build_docker_template
   before_script:
     - BUILD_TIMESTAMP=$(date +"%Y-%m-%d-%H.%M") #timestamp in "2000-01-01-12.00" format
@@ -133,7 +133,7 @@ Release_master_job:
     - BUILD_TIMESTAMP=$(date +"%Y-%m-%d-%H.%M") #timestamp in "2000-01-01-12.00" format
     - VERSION=$(awk -F'[><]' '/<version>.*-SNAPSHOT<\/version>/{print $3 "-'$BUILD_TIMESTAMP'-'$CI_COMMIT_SHORT_SHA'"}' "./pom.xml") #"version" variable
   script:
-    - apt install git
+    - apk add install git
     - git config --global user.name "${GITLAB_USER_NAME}"
     - git config --global user.email "${GITLAB_USER_EMAIL}" #authorization in git
     - git checkout -b master #checkout to master
