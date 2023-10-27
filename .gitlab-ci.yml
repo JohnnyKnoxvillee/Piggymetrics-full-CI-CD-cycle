@@ -1,0 +1,45 @@
+#stage1
+
+default:
+  tags:
+    - my-gitlab-runner
+
+variables:
+  IMAGE_NAME: gcr.io/devops-workshop-2023/terraform-runner
+  GCR_REGISTRY: gcr.io/devops-workshop-2023
+
+stages:
+  - test
+  - build
+  - build_docker
+
+.test_template:
+  stage: test
+  image: maven:3.9.4-eclipse-temurin-11-alpine
+  script:
+    - echo $SERVICE_ACCOUNT_JSON | base64 -d > $CI_PROJECT_DIR/service-account.json
+    - mvn test
+    - mvn clean package
+
+
+.build_template:
+  stage: build
+  image: maven:3.9.4-eclipse-temurin-11-alpine
+  script:
+    - echo $SERVICE_ACCOUNT_JSON | base64 -d > $CI_PROJECT_DIR/service-account.json
+    - mvn test
+    - mvn versions:set
+    - mvn clean package
+
+MR_test_job:
+  stage: test
+  extends: .test_template
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+MR_build_job:
+  stage: build
+  extends: .build_template
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    
