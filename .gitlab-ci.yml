@@ -93,9 +93,10 @@ Create_release_branch_job:
     - git checkout -b $RELEASE_VERSION #checkout to release branch
     - git add *
     - git commit -m "$RELEASE_VERSION"
-    - git push -f http://JohnnyKnoxvillee:$ACCESS_TOKEN@gitlab.com/devops-workshop-2023/piggymetrics.git HEAD:$RELEASE_VERSION
+    - git push -u origin $RELEASE_VERSION
     - !reference [.build_template, script] #start script ".build_template" - test and versions set
     - mvn clean package #build jar files 1.0.0
+  # - git push -f http://JohnnyKnoxvillee:$ACCESS_TOKEN@gitlab.com/devops-workshop-2023/piggymetrics.git HEAD:$RELEASE_VERSION
   # - git push origin $RELEASE_VERSION #push 1.0.0 artifacts to release branch
   # - git push -f http://JohnnyKnoxvillee:$ACCESS_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git HEAD:$RELEASE_VERSION
   rules:
@@ -116,7 +117,7 @@ Push_release_artifacts_job:
       SERVICE_LIST=$(ls -d */ | sed 's#/##' | grep -v artifacts)
       FOLDER=
        for SERVICE in ${SERVICE_LIST}; do
-      sed "s/\$SERVICE/$SERVICE/g; s/\$FOLDER/$FOLDER\/g" cloudbuild_template.yaml > cloudbuild.yaml
+      sed "s/\$SERVICE/$SERVICE/g; s/\$FOLDER/$FOLDER/g" cloudbuild_template.yaml > cloudbuild.yaml
       echo gcloud builds submit --region=us-central1 --config=cloudbuild.yaml
        done
   rules:
@@ -158,7 +159,8 @@ Release_master_job:
     - !reference [.build_template, script] #start ".build_template" script for update version in pom to 1.0.1
     - git add *
     - git commit -m "$VERSION-release" # + commit message
-    - git push -f http://JohnnyKnoxvillee:$ACCESS_TOKEN@gitlab.com/devops-workshop-2023/piggymetrics.git HEAD:master
+    - git push -u origin master
+#    - git push -f http://JohnnyKnoxvillee:$ACCESS_TOKEN@gitlab.com/devops-workshop-2023/piggymetrics.git HEAD:master
 #    - git push origin master #this is trigger master build + master build docker jobs!!! => push to artifact registry 1.0.1 version
 #    - git push -f http://JohnnyKnoxvillee:$ACCESS_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git HEAD:master
 #    - git push origin master #this is trigger master build + master build docker jobs!!! => push to artifact registry 1.0.1 version
