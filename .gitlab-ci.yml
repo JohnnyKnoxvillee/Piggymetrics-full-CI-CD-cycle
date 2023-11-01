@@ -19,7 +19,6 @@ stages:
   script:
     - mvn test
     - mvn versions:set -DnewVersion=$VERSION #add actual version to all pom-files
-    - mvn clean package #build jar files
 .build_docker_template:
   stage: build_docker
   image: alpine:latest #gcr.io/devops-workshop-2023/terraform-runner:1.0.1 #disable Google related commands
@@ -47,7 +46,8 @@ Master_build_job:
   before_script:
     - BUILD_TIMESTAMP=$(date +"%Y-%m-%d-%H.%M") #timestamp in "2000-01-01-12.00" format
     - VERSION=$(awk -F'[><]' '/<version>.*-SNAPSHOT<\/version>/{print $3 "-'$BUILD_TIMESTAMP'-'$CI_COMMIT_SHORT_SHA'"}' "./pom.xml") #"version" variable
-    # - mvn clean package #build jar files
+  after_script:
+    - mvn clean package #build jar files
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
           #don't build if commit message "release version..."
@@ -154,9 +154,11 @@ Release_master_job:
       NEW_MINOR_VERSION=$MINOR_VERSION
       NEW_PATCH_VERSION=$((PATCH_VERSION + 1))
        fi
-      VERSION="$NEW_MAJOR_VERSION.$NEW_MINOR_VERSION.$NEW_PATCH_VERSION-SNAPSHOT-$BUILD_TIMESTAMP-$BUILD_TIMESTAMP
-    - echo $VERSION-release > ci_commit_message.env #save commit message to .env file for use in "Create_release_branch_job" rules
+      VERSION="$NEW_MAJOR_VERSION.$NEW_MINOR_VERSION.$NEW_PATCH_VERSION-SNAPSHOT-$BUILD_TIMESTAMP-$CI_COMMIT_SHORT_SHA
+   # - echo $VERSION-release > ci_commit_message.env #save commit message to .env file for use in "Create_release_branch_job" rules
     - !reference [.build_template, script] #start ".build_template" script for update version in pom to 1.0.1
+    - VERSION=$(echo $VERSION | cut -d "-" -f 1)
+    - echo $VERSION-release > ci_commit_message.env #save commit message to .env file for use in "Create_release_branch_job" rules
     - git add *
     - git commit -m "$VERSION-release" # + commit message
     - git push -f https://JohnnyKnoxvillee:$ACCESS_TOKEN@gitlab.com/devops-workshop-2023/piggymetrics.git HEAD:master
