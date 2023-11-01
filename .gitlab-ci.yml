@@ -27,7 +27,7 @@ stages:
     - | #create artifact folder and add jar files to service folders
       SERVICE_LIST=$(ls -d */ | sed 's#/##' | grep -Ev 'artifacts|mongodb')
        for SERVICE in ${SERVICE_LIST}; do
-      cd artifacts/$SERVICE-*.jar $SERVICE
+      mv artifacts/$SERVICE-*.jar $SERVICE
        done
     - echo $SERVICE_ACCOUNT_JSON | base64 -d > $CI_PROJECT_DIR/service-account.json #copy service account key.json
     - echo gcloud auth activate-service-account "$SERVICE_ACCOUNT_NAME" --key-file=service-account.json #authorization in gcp #disable Google related commands
