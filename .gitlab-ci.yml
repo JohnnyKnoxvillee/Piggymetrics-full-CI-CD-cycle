@@ -95,7 +95,7 @@ Create_release_branch_job:
     - git add *
     - git commit -m "$RELEASE_VERSION"
     - git push -f https://JohnnyKnoxvillee:$ACCESS_TOKEN@gitlab.com/devops-workshop-2023/piggymetrics.git HEAD:$RELEASE_VERSION
-    - !reference [.build_template, script] #start script ".build_template" - test and versions set
+   # - !reference [.build_template, script] #start script ".build_template" - test and versions set #as artifacts build in master job
  #     - git push -u origin $RELEASE_VERSION
   # - git push -f http://JohnnyKnoxvillee:$ACCESS_TOKEN@gitlab.com/devops-workshop-2023/piggymetrics.git HEAD:$RELEASE_VERSION
   # - git push origin $RELEASE_VERSION #push 1.0.0 artifacts to release branch
