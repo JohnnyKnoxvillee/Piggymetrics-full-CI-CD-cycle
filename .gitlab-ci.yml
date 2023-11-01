@@ -19,6 +19,7 @@ stages:
   script:
     - mvn test
     - mvn versions:set -DnewVersion=$VERSION #add actual version to all pom-files
+
 .build_docker_template:
   stage: build_docker
   image: alpine:latest #gcr.io/devops-workshop-2023/terraform-runner:1.0.1 #disable Google related commands
@@ -95,7 +96,6 @@ Create_release_branch_job:
     - git commit -m "$RELEASE_VERSION"
     - git push -f https://JohnnyKnoxvillee:$ACCESS_TOKEN@gitlab.com/devops-workshop-2023/piggymetrics.git HEAD:$RELEASE_VERSION
     - !reference [.build_template, script] #start script ".build_template" - test and versions set
-    - mvn clean package #build jar files
  #     - git push -u origin $RELEASE_VERSION
   # - git push -f http://JohnnyKnoxvillee:$ACCESS_TOKEN@gitlab.com/devops-workshop-2023/piggymetrics.git HEAD:$RELEASE_VERSION
   # - git push origin $RELEASE_VERSION #push 1.0.0 artifacts to release branch
