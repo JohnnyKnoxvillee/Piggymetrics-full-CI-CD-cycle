@@ -19,7 +19,7 @@ stages:
   script:
     - mvn test
     - mvn versions:set -DnewVersion=$VERSION #add actual version to all pom-files
-
+    - mvn clean package #build jar files
 .build_docker_template:
   stage: build_docker
   image: alpine:latest #gcr.io/devops-workshop-2023/terraform-runner:1.0.1 #disable Google related commands
@@ -47,7 +47,7 @@ Master_build_job:
   before_script:
     - BUILD_TIMESTAMP=$(date +"%Y-%m-%d-%H.%M") #timestamp in "2000-01-01-12.00" format
     - VERSION=$(awk -F'[><]' '/<version>.*-SNAPSHOT<\/version>/{print $3 "-'$BUILD_TIMESTAMP'-'$CI_COMMIT_SHORT_SHA'"}' "./pom.xml") #"version" variable
-    - mvn clean package #build jar files
+    # - mvn clean package #build jar files
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
           #don't build if commit message "release version..."
