@@ -1,19 +1,18 @@
-CONFIG_SERVICE_PASSWORD: password
-NOTIFICATION_SERVICE_PASSWORD: password
-STATISTICS_SERVICE_PASSWORD: password
-ACCOUNT_SERVICE_PASSWORD: password
-MONGODB_PASSWORD: password
+envvars:
+  CONFIG_SERVICE_PASSWORD: password
+  NOTIFICATION_SERVICE_PASSWORD: password
+  STATISTICS_SERVICE_PASSWORD: password
+  ACCOUNT_SERVICE_PASSWORD: password
+  MONGODB_PASSWORD: password
+  
+statefulset:
+  enabled: false
 
 image:
   repository: leonid132/piggymetrics-turbine-stream-service:latest
   pullPolicy: IfNotPresent
 replicaCount: 1
-metadata:
-  name: turbine-stream-service
-labels:
-  service: turbine-stream-service
-selector:
-  service: turbine-stream-service
+
 
 service:
   type: ClusterIP
@@ -22,12 +21,10 @@ service:
 
 containers:
   name: turbine-stream-service
-serviceAccount:
-  create: true
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: "turbine-stream-service"
+fullnameOverride: "turbine-stream-service"
 
 serviceAccount:
   create: true
