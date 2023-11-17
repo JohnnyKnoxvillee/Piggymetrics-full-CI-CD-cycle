@@ -4,12 +4,12 @@ envvars:
   STATISTICS_SERVICE_PASSWORD: password
   ACCOUNT_SERVICE_PASSWORD: password
   MONGODB_PASSWORD: password
-  
+
 statefulset:
   enabled: false
 
 image:
-  repository: leonid132/piggymetrics-auth-service:latest
+  repository: us-central1-docker.pkg.dev/devops-workshop-2023/piggymetrics/snapshots/auth-service
   pullPolicy: IfNotPresent
 replicaCount: 1
 
@@ -39,7 +39,7 @@ ingress:
   className: ""
   annotations: {}
 
-resources: 
+resources:
   limits:
     memory: 700Mi
   requests:
