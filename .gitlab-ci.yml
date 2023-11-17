@@ -32,14 +32,12 @@ stages:
     - echo $SERVICE_ACCOUNT_JSON | base64 -d > $CI_PROJECT_DIR/service-account.json #copy service account key.json
     - echo gcloud auth activate-service-account "$SERVICE_ACCOUNT_NAME" --key-file=service-account.json #authorization in gcp #disable Google related commands
     - echo gcloud artifacts repositories create piggymetrics --repository-format=docker --location=us-central1 || true #create artifact repo #disable Google related commands
-#trigger the Create_release_branch_job"
 
 MR_test_job:
   stage: test
   extends: .test_template
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-#test stage
 
 Master_build_job:
   stage: build
@@ -51,11 +49,9 @@ Master_build_job:
     - mvn clean package #build jar files
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-          #don't build if commit message "release version..."
   artifacts:
     paths:
       - artifacts/* #artifact folder
-#build stage
 
 Master_build_docker_job:
   stage: build_docker
@@ -74,10 +70,8 @@ Master_build_docker_job:
        done
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-          #don't build if commit message "release version..."
   dependencies:
     - Master_build_job
-#docker build stage. Push artifacts to snapshots/
 
 Create_release_branch_job:
   stage: create_release_branch
@@ -95,16 +89,10 @@ Create_release_branch_job:
     - git add *
     - git commit -m "$RELEASE_VERSION"
     - git push -f https://JohnnyKnoxvillee:$ACCESS_TOKEN@gitlab.com/devops-workshop-2023/piggymetrics.git HEAD:$RELEASE_VERSION
-   # - !reference [.build_template, script] #start script ".build_template" - test and versions set #as artifacts build in master job
- #     - git push -u origin $RELEASE_VERSION
-  # - git push -f http://JohnnyKnoxvillee:$ACCESS_TOKEN@gitlab.com/devops-workshop-2023/piggymetrics.git HEAD:$RELEASE_VERSION
-  # - git push origin $RELEASE_VERSION #push 1.0.0 artifacts to release branch
-  # - git push -f http://JohnnyKnoxvillee:$ACCESS_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git HEAD:$RELEASE_VERSION
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH && $CI_COMMIT_MESSAGE != "$(cat ci_commit_message.env)"
   dependencies:
     - Master_build_docker_job
-#push 1.0.0 artifacts to release branch
 
 Push_release_artifacts_job:
   stage: create_release_branch
@@ -126,7 +114,6 @@ Push_release_artifacts_job:
   dependencies:
     - Create_release_branch_job
 
-
 Release_master_job:
   stage: release
   image: maven:3.9.4-eclipse-temurin-11-alpine
@@ -135,8 +122,7 @@ Release_master_job:
     - VERSION=$(awk -F'[><]' '/<version>.*-SNAPSHOT<\/version>/{print $3 "-'$BUILD_TIMESTAMP'-'$CI_COMMIT_SHORT_SHA'"}' "./pom.xml") #"version" variable
   script:
     - apk add git
-    - git config --global user.name "${GITLAB_USER_NAME}"
-    - git config --global user.email "${GITLAB_USER_EMAIL}" #authorization in git
+    - git init
     - git checkout -b master #checkout to master
     - | #script to update version for the next one
       MAJOR_VERSION=$(echo $VERSION | cut -d '.' -f 1)
@@ -156,18 +142,12 @@ Release_master_job:
       NEW_PATCH_VERSION=$((PATCH_VERSION + 1))
        fi
       VERSION="$NEW_MAJOR_VERSION.$NEW_MINOR_VERSION.$NEW_PATCH_VERSION-SNAPSHOT-$BUILD_TIMESTAMP-$CI_COMMIT_SHORT_SHA
-   # - echo $VERSION-release > ci_commit_message.env #save commit message to .env file for use in "Create_release_branch_job" rules
     - !reference [.build_template, script] #start ".build_template" script for update version in pom to 1.0.1
     - VERSION=$(echo $VERSION | cut -d "-" -f 1)
     - echo $VERSION-release > ci_commit_message.env #save commit message to .env file for use in "Create_release_branch_job" rules
     - git add *
     - git commit -m "$VERSION-release" # + commit message
     - git push -f https://JohnnyKnoxvillee:$ACCESS_TOKEN@gitlab.com/devops-workshop-2023/piggymetrics.git HEAD:master
-#    - git push -u origin master
-#    - git push -f http://JohnnyKnoxvillee:$ACCESS_TOKEN@gitlab.com/devops-workshop-2023/piggymetrics.git HEAD:master
-#    - git push origin master #this is trigger master build + master build docker jobs!!! => push to artifact registry 1.0.1 version
-#    - git push -f http://JohnnyKnoxvillee:$ACCESS_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git HEAD:master
-#    - git push origin master #this is trigger master build + master build docker jobs!!! => push to artifact registry 1.0.1 version
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
   dependencies:
