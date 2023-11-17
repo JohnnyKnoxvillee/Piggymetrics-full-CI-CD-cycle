@@ -1,0 +1,8 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    id  : $SERVICE-build
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/devops-workshop-2023/piggymetrics/$FOLDER$SERVICE:1.0.0-SNAPSHOT-2023-11-17-23.17-98794d02', './$SERVICE']
+
+  - name: gcr.io/cloud-builders/docker
+    id  : $SERVICE-push
+    args: ['push', 'us-central1-docker.pkg.dev/devops-workshop-2023/piggymetrics/$FOLDER$SERVICE:1.0.0-SNAPSHOT-2023-11-17-23.17-98794d02']
