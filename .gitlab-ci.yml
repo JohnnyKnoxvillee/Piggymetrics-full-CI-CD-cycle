@@ -22,16 +22,16 @@ stages:
 
 .build_docker_template:
   stage: build_docker
-  image: alpine:latest #gcr.io/devops-workshop-2023/terraform-runner:1.0.1 #disable Google related commands
+  image: gcr.io/devops-workshop-2023/terraform-runner:1.0.1 #disable Google related commands
   script:
     - | #create artifact folder and add jar files to service folders
       SERVICE_LIST=$(ls -d */ | sed 's#/##' | grep -Ev 'artifacts|mongodb')
        for SERVICE in ${SERVICE_LIST}; do
       mv artifacts/$SERVICE-*.jar $SERVICE
        done
-    - echo $SERVICE_ACCOUNT_JSON | base64 -d > $CI_PROJECT_DIR/service-account.json #copy service account key.json
-    - echo gcloud auth activate-service-account "$SERVICE_ACCOUNT_NAME" --key-file=service-account.json #authorization in gcp #disable Google related commands
-    - echo gcloud artifacts repositories create piggymetrics --repository-format=docker --location=us-central1 || true #create artifact repo #disable Google related commands
+    - $SERVICE_ACCOUNT_JSON | base64 -d > $CI_PROJECT_DIR/service-account.json #copy service account key.json
+    - gcloud auth activate-service-account "$SERVICE_ACCOUNT_NAME" --key-file=service-account.json #authorization in gcp #disable Google related commands
+    - gcloud artifacts repositories create piggymetrics --repository-format=docker --location=us-central1 || true #create artifact repo #disable Google related commands
 
 MR_test_job:
   stage: test
@@ -66,7 +66,7 @@ Master_build_docker_job:
       FOLDER=snapshots
        for SERVICE in ${SERVICE_LIST}; do
       sed "s/\$SERVICE/$SERVICE/g; s/\$FOLDER/$FOLDER\//g" cloudbuild_template.yaml > cloudbuild.yaml
-      echo gcloud builds submit --region=us-central1 --config=cloudbuild.yaml
+      gcloud builds submit --region=us-central1 --config=cloudbuild.yaml
        done
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
@@ -83,8 +83,7 @@ Create_release_branch_job:
   script:
     - RELEASE_VERSION=$(echo $VERSION | sed 's/\-.*//')-release #"release version" variable in format 1.0.0-release
     - apk add git
-    - git config --global user.name "${GITLAB_USER_NAME}"
-    - git config --global user.email "${GITLAB_USER_EMAIL}" #authorization repo in git
+    - git remote add https://gitlab.com/devops-workshop-2023/piggymetrics #authorization repo in git
     - git checkout -b $RELEASE_VERSION #checkout to release branch
     - git add *
     - git commit -m "$RELEASE_VERSION"
@@ -107,7 +106,7 @@ Push_release_artifacts_job:
       FOLDER=
        for SERVICE in ${SERVICE_LIST}; do
       sed "s/\$SERVICE/$SERVICE/g; s/\$FOLDER/$FOLDER/g" cloudbuild_template.yaml > cloudbuild.yaml
-      echo gcloud builds submit --region=us-central1 --config=cloudbuild.yaml
+      gcloud builds submit --region=us-central1 --config=cloudbuild.yaml
        done
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH && $CI_COMMIT_MESSAGE != "$(cat ci_commit_message.env)"
@@ -122,7 +121,7 @@ Release_master_job:
     - VERSION=$(awk -F'[><]' '/<version>.*-SNAPSHOT<\/version>/{print $3 "-'$BUILD_TIMESTAMP'-'$CI_COMMIT_SHORT_SHA'"}' "./pom.xml") #"version" variable
   script:
     - apk add git
-    - git init
+    - git remote add https://gitlab.com/devops-workshop-2023/piggymetrics
     - git checkout -b master #checkout to master
     - | #script to update version for the next one
       MAJOR_VERSION=$(echo $VERSION | cut -d '.' -f 1)
@@ -178,7 +177,7 @@ Branch_build_docker_job:
       FOLDER=$CI_COMMIT_BRANCH
        for SERVICE in ${SERVICE_LIST}; do
       sed "s/\$SERVICE/$SERVICE/g; s/\$FOLDER/$FOLDER\//g" cloudbuild_template.yaml > cloudbuild.yaml
-      echo gcloud builds submit --region=us-central1 --config=cloudbuild.yaml
+      gcloud builds submit --region=us-central1 --config=cloudbuild.yaml
        done
   rules:
     - if: $CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_NAME !~ ".*-release"
